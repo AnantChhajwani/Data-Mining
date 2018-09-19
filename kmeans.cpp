@@ -4,7 +4,7 @@ using namespace std;
 
 // Used for termination condition
 // Terminate when number of clusters changed < espilon% of points
-const double epsilon = 0.001;
+const double epsilon = 0.00001;
 
 /***
 	k : k-means parameter
@@ -18,13 +18,17 @@ vector <int> clusterIds;
 vector <int> numElementsInCluster;
 vector< vector <double> > kMeans;
 
+vector <int> bestClusterIds;
+double best_value;
+bool initupdate = false;
+
 void writeOutput(string fileName) {
 
 	vector <vector <int> > finalAssignments;
 	finalAssignments.resize(k);
 
 	for(int i = 0; i < n; i++) {
-		finalAssignments[clusterIds[i]].push_back(i);
+		finalAssignments[bestClusterIds[i]].push_back(i);
 	}
  
 	ofstream outfile (fileName);
@@ -49,10 +53,10 @@ void readInput(string fileName) {
 		n++;
 		vector <double> currPoint;
 		while(true) {
-			double n;
-			stream >> n;
+			double pt;
+			stream >> pt;
 			if(!stream) break;
-			currPoint.push_back(n);
+			currPoint.push_back(pt);
 		}
 		points.push_back(currPoint);
 	}
@@ -62,7 +66,42 @@ void readInput(string fileName) {
 	d = points[0].size();
 }
 
+double distance(vector<double> p1, vector<double> p2) {
+	
+	double dist = 0;
+	
+	for(int i = 0; i < p1.size(); i++) {
+		dist += (p1[i] - p2[i]) * (p1[i] - p2[i]);
+	}
+	
+	return dist;
+}
+
+void update() {
+	if(!initupdate) {
+		initupdate = true;
+		bestClusterIds.resize(n);
+		for(int i = 0; i < clusterIds.size(); i++)
+			bestClusterIds[i] = clusterIds[i];
+		best_value = 0;
+		for(int i = 0; i < n; i++) {
+			double dist = distance(points[i], kMeans[bestClusterIds[i]]);
+			best_value += dist;
+		}
+		return;
+	}
+	int curr_value = 0;
+	for(int i = 0; i < n; i++) {
+		double dist = distance(points[i], kMeans[bestClusterIds[i]]);
+		curr_value += dist;
+	}
+	if(curr_value > best_value) return;
+	for(int i = 0; i < n; i++)
+		bestClusterIds[i] = clusterIds[i];
+}
+
 void initialize() {
+	/*
 
 	// Assign one point to each cluster
 	for(int i=0; i < k; i++) {
@@ -75,6 +114,9 @@ void initialize() {
 		clusterIds.push_back(rand() % k);
 	}
 
+	//for(int i = 0; i < points.size(); i++)
+	//	cout << clusterIds[i] << " ";
+
 	// Initialize kMeans
 	kMeans.resize(k);
 	for(int i = 0; i < k; i++) {
@@ -83,6 +125,36 @@ void initialize() {
 
 	numElementsInCluster.resize(k);
 
+	*/
+
+	numElementsInCluster.resize(k);
+	clusterIds.resize(n);
+	kMeans.resize(k);
+	for(int i = 0; i < k; i++)
+		kMeans[i].resize(d);
+
+	srand(time(NULL));
+	vector <int> vec;
+	for(int i = 0; i < k; i++) {
+		while(true) {
+			int chose = rand() % n;
+			bool flag = false;
+			for(int j = 0; j < vec.size(); j++) {
+				if(vec[j] == chose) flag = true;
+			}
+			if(!flag) {
+				vec.push_back(chose);
+				break;
+			}
+		}
+	}
+
+	for(int i = 0; i < k; i++) {
+		for(int j = 0; j < d; j++) {
+			kMeans[i][j] = points[vec[i]][j];
+		}
+	}
+	numElementsInCluster[0] = n;
 }
 
 void computeMeans() {
@@ -110,17 +182,6 @@ void computeMeans() {
 	}
 }
 
-void distance(vector<double> p1, vector<double> p2) {
-	
-	double dist = 0;
-	
-	for(int i = 0; i < p1.size(); i++) {
-		dist += (p1[i] - p2[i]) * (p1[i] - p2[i]);
-	}
-	
-	return dist;
-}
-
 bool computeClusterAssignment() {
 
 	int changedClusters = 0;
@@ -136,10 +197,6 @@ bool computeClusterAssignment() {
 				minDist = currDist;
 				currCluster = j;
 			}
-		}
-
-		if(clusterIds[i] != currCluster) {
-			changedClusters++;
 		}
 
 		clusterIds[i] = currCluster;
@@ -163,6 +220,24 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	int iter = 0;
+	while(iter < 10) {
+		cout << iter << endl;
+		initialize();
+		//cout << "hello" << endl;
+		int cnt =0;
+		while(cnt < 25) {
+			cnt++;
+			computeClusterAssignment();
+		//	cout << "Hi" << endl;
+			computeMeans();
+		}
+		update();
+		iter++;
+	}
+
+	/*
+
 	// Initialize cluster assignment
 	initialize();
 
@@ -170,9 +245,17 @@ int main(int argc, char* argv[]) {
 	computeMeans();
 
 	// Iterate k-means algo till convergence
-	while(computeClusterAssignment()) {
+	int iter = 0;
+	while(iter < 200) {
+		iter++;
+		computeClusterAssignment();
 		computeMeans();
 	}
+
+	for(int i = 0; i < k; i++)
+		cout << numElementsInCluster[i] << endl;
+
+	*/
 
 	// Write output
 	writeOutput("kmeans.txt");
