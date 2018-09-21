@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import itertools
 
-file1 = open("points2.txt","r")
+file1 = open("points5.txt","r")
 inp = []
 for line in file1:
 	lis = []
@@ -23,11 +23,11 @@ for line in file2:
 	else:
 		idx = int(line)
 		lis.append(inp[idx])
-clusters.append(lis)
+if len(lis) > 0:
+	clusters.append(lis)
 
-print (len(clusters[0]))
-print (len(clusters[1]))
-print (len(clusters[2]))
+for i in clusters:
+	print(len(i))
 
 
 inp = np.array(inp)
@@ -37,7 +37,7 @@ plt.show()
 
 #cluster = np.array(clusters)
 cnt = 0
-colors = ["red", "blue", "green"]
+colors = ["red", "blue", "green", "pink", "yellow", "purple", "orange", "magenta", "brown", "gold", "silver", ""]
 for arr in clusters:
 	cnt += 1
 	#print (arr)

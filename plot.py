@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import itertools
 
-file1 = open("points.txt","r")
+file1 = open("points3.txt","r")
 inp = []
 cnt = 0
 for line in file1:
@@ -30,13 +30,8 @@ for line in file2:
 		lis.append(inp[idx])
 clusters.append(lis)
 
-print (len(clusters[0]))
-print (len(clusters[1]))
-print (len(clusters[2]))
-print (len(clusters[3]))
-print (len(clusters[4]))
-print (len(clusters[5]))
-print (len(clusters[6]))
+for i in clusters:
+	print(len(i))
 
 
 inp = np.array(inp)

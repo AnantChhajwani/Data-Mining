@@ -1,9 +1,6 @@
 #include <bits/stdc++.h>
-#include "nanoflann.hpp"
-#include "KDTreeVectorOfVectorsAdaptor.h"
 
 using namespace std;
-using namespace nanoflann;
 
 int minPts;
 double epsilon;

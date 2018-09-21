@@ -3,8 +3,8 @@
 using namespace std;
 
 // Used for termination condition
-// Terminate when number of clusters changed < espilon% of points
-const double epsilon = 0.00001;
+// Terminate when number of clusters changed < espilon fraction of points
+const double epsilon = 0.000001;
 
 /***
 	k : k-means parameter
@@ -101,39 +101,16 @@ void update() {
 }
 
 void initialize() {
-	/*
-
-	// Assign one point to each cluster
-	for(int i=0; i < k; i++) {
-		clusterIds.push_back(i);
-	}
-
-	// Assign random cluster to rest of the points
-	srand (time(NULL));
-	for(int i = k; i < points.size(); i++) {
-		clusterIds.push_back(rand() % k);
-	}
-
-	//for(int i = 0; i < points.size(); i++)
-	//	cout << clusterIds[i] << " ";
-
-	// Initialize kMeans
-	kMeans.resize(k);
-	for(int i = 0; i < k; i++) {
-		kMeans[i].resize(d);
-	}
-
-	numElementsInCluster.resize(k);
-
-	*/
 
 	numElementsInCluster.resize(k);
 	clusterIds.resize(n);
 	kMeans.resize(k);
+
 	for(int i = 0; i < k; i++)
 		kMeans[i].resize(d);
 
 	srand(time(NULL));
+
 	vector <int> vec;
 	for(int i = 0; i < k; i++) {
 		while(true) {
@@ -154,6 +131,46 @@ void initialize() {
 			kMeans[i][j] = points[vec[i]][j];
 		}
 	}
+
+	numElementsInCluster[0] = n;
+}
+
+void initialize2() {
+
+	numElementsInCluster.resize(k);
+	clusterIds.resize(n);
+	kMeans.resize(k);
+
+	for(int i = 0; i < k; i++)
+		kMeans[i].resize(d);
+
+	srand(time(NULL));
+
+	vector <int> vec;
+	vec.push_back(rand() % n);
+
+	vector <double> dis;
+	dis.resize(n);
+	
+	for(int i = 1; i < k; i++) {
+		for(int j = 0; j < n; j++) {
+			dis[j] = distance(points[j], points[vec[0]]);
+			for(int r = 1; r < vec.size(); r++)
+				dis[j] = min(dis[j], distance(points[j], points[vec[r]]));
+		}
+		int idx = 0;
+		for(int j = 1; j < n; j++) {
+			if(dis[j] > dis[idx]) idx = j;
+		}
+		vec.push_back(idx);
+	}
+
+	for(int i = 0; i < k; i++) {
+		for(int j = 0; j < d; j++) {
+			kMeans[i][j] = points[vec[i]][j];
+		}
+	}
+
 	numElementsInCluster[0] = n;
 }
 
@@ -214,48 +231,21 @@ int main(int argc, char* argv[]) {
 	// Read input file
 	readInput(inputFile);
 
-	// Error handling
-	if(points.size() < k) {
-		cout<<"Number of points less than number of clusters!\n";
-		return 0;
-	}
-
 	int iter = 0;
-	while(iter < 10) {
+	while(iter < 20) {
 		cout << iter << endl;
-		initialize();
-		//cout << "hello" << endl;
-		int cnt =0;
-		while(cnt < 25) {
-			cnt++;
+		// Initialize cluster assignment
+		if(iter & 1) initialize();
+		else initialize2();
+		int counter = 0;
+		while(counter < 200) {
 			computeClusterAssignment();
-		//	cout << "Hi" << endl;
 			computeMeans();
+			counter++;
 		}
 		update();
 		iter++;
 	}
-
-	/*
-
-	// Initialize cluster assignment
-	initialize();
-
-	// Compute initial means
-	computeMeans();
-
-	// Iterate k-means algo till convergence
-	int iter = 0;
-	while(iter < 200) {
-		iter++;
-		computeClusterAssignment();
-		computeMeans();
-	}
-
-	for(int i = 0; i < k; i++)
-		cout << numElementsInCluster[i] << endl;
-
-	*/
 
 	// Write output
 	writeOutput("kmeans.txt");
